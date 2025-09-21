@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juego de Girasoles 🌻</title>
   <style>
     body {
@@ -21,9 +21,9 @@
       justify-content: center;
     }
     .cell {
-      width: 60px;
-      height: 60px;
-      font-size: 32px;
+      width: 18vw;       /* relativo al ancho de la pantalla */
+      height: 18vw;      /* cuadradas */
+      font-size: 8vw;    /* el emoji escala proporcional */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -55,19 +55,21 @@
     #startScreen {
       margin-top: 50px;
     }
-    input {
-      padding: 10px;
-      font-size: 16px;
+    input, button {
+      font-size: 18px;
+      padding: 12px 18px;
+      border-radius: 8px;
     }
+
     button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-left: 10px;
-      background: #fdd835;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      background-color: #fdd835;
+      color: #333;
     }
+
+    button:hover {
+      background-color: #fbc02d;
+    }
+
     button:hover {
       background: #fbc02d;
     }
@@ -121,7 +123,7 @@
       message.textContent = `Nivel ${lvl}`;
 
       const size = lvl + 1; 
-      game.style.gridTemplateColumns = `repeat(${size}, 60px)`;
+      game.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
 
       const totalCells = size * size;
       let flowerIndex = Math.floor(Math.random() * totalCells);
@@ -198,7 +200,7 @@
       const fullMessage = `¡Felicidades ${player}! Encontraste todos los girasoles 🌻💛 
       
 💌 Cada girasol que encontraste representa un pensamiento bonito que tengo hacia ti. 
-Este ramo es para recordarte que, aunque no pueda verte, siempre serás mi luz y mi alegría.
+Este ramo es para recordarte que, aunque no pueda verte seguido, siempre serás mi luz y mi alegría.
                                     💌Te Quiero Mucho ${player}💌`;
 
       let i = 0;
@@ -243,4 +245,5 @@ Este ramo es para recordarte que, aunque no pueda verte, siempre serás mi luz y
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </body>
 </html>
+
 
