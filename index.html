@@ -2,172 +2,220 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Juego de Girasoles 🌻</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
       background: #fffde7;
+      text-align: center;
       margin: 0;
-      padding: 0;
+      padding: 20px;
     }
     h1 {
       color: #f9a825;
     }
-    #gameArea {
-      display: none;
-      margin-top: 20px;
-    }
-    .grid {
+    #game {
+      margin-top: 30px;
       display: grid;
-      grid-template-columns: repeat(5, 80px);
       gap: 10px;
       justify-content: center;
-      margin: 20px auto;
     }
     .cell {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
+      font-size: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 40px;
+      cursor: pointer;
+      background: #fff9c4;
+      border-radius: 10px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+    }
+    .cell:hover {
+      background: #ffe082;
+    }
+    #message {
+      font-size: 20px;
+      margin-top: 20px;
+      color: #555;
+      white-space: pre-line; /* respeta saltos de línea */
+      min-height: 120px;
+    }
+    #bouquet {
+      font-size: 100px;
+      display: none;
+      margin-top: 20px;
+      animation: pop 1s ease-in-out forwards;
+    }
+    @keyframes pop {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    #startScreen {
+      margin-top: 50px;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      background: #fdd835;
+      border: none;
+      border-radius: 5px;
       cursor: pointer;
     }
-    #finalMessage {
-      display: none;
-      font-size: 22px;
-      font-weight: bold;
-      margin-top: 20px;
-      color: #d81b60;
+    button:hover {
+      background: #fbc02d;
     }
   </style>
 </head>
 <body>
-  <h1>🌻 Encuentra el girasol 🌻</h1>
+  <h1>🌻 Encuentra el Girasol 🌻</h1>
 
   <!-- Pantalla de inicio -->
   <div id="startScreen">
-    <p>Escribe tu nombre para comenzar:</p>
+    <p>Ingresa tu nombre para comenzar:</p>
     <input type="text" id="playerName" placeholder="Tu nombre">
-    <br><br>
-    <button id="startButton">Iniciar Juego</button>
+    <button onclick="startGame()">Comenzar</button>
   </div>
 
-  <!-- Área del juego -->
-  <div id="gameArea">
-    <h2 id="levelTitle">Nivel 1</h2>
-    <div class="grid" id="grid"></div>
-  </div>
-
-  <!-- Mensaje final -->
-  <div id="finalMessage"></div>
+  <!-- Juego -->
+  <div id="game" style="display:none;"></div>
+  <div id="message"></div>
+  <div id="bouquet">💐🌻💐🌻💐</div>
 
   <!-- Música alegre de fondo -->
   <audio id="celebrationMusic" src="musicgonegone.mp3" preload="auto" loop></audio>
-
+  
   <!-- Fanfarrias/aplausos para el final -->
   <audio id="finalSound" src="https://www.fesliyanstudios.com/play-mp3/387" preload="auto"></audio>
 
   <script>
-    const startButton = document.getElementById("startButton");
-    const playerNameInput = document.getElementById("playerName");
-    const startScreen = document.getElementById("startScreen");
-    const gameArea = document.getElementById("gameArea");
-    const levelTitle = document.getElementById("levelTitle");
-    const grid = document.getElementById("grid");
-    const finalMessage = document.getElementById("finalMessage");
+    const distractors = ["🍃","☀️","⭐","🌙","🍂"];
+    let level = 1;
+    let maxLevel = 7;
+    let interval = null;
+    let player = "";
 
-    const celebrationMusic = document.getElementById("celebrationMusic");
-    const finalSound = document.getElementById("finalSound");
+    function startGame() {
+      const nameInput = document.getElementById("playerName");
+      player = nameInput.value.trim() || "Jugador";
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("game").style.display = "grid";
 
-    let currentLevel = 1;
-    let playerName = "";
+      // Reproducir música alegre de fondo
+      const music = document.getElementById("celebrationMusic");
+      music.play();
 
-    // Configuración de niveles
-    const levels = [
-      { size: 3 },
-      { size: 4 },
-      { size: 5 },
-      { size: 6 },
-      { size: 7, moveInterval: 1000 },
-      { size: 7, moveInterval: 750 },
-      { size: 7, moveInterval: 800 }
-    ];
+      startLevel(level);
+    }
 
-    startButton.addEventListener("click", () => {
-      playerName = playerNameInput.value.trim();
-      if (playerName === "") {
-        alert("Por favor, escribe tu nombre antes de empezar.");
-        return;
-      }
+    function startLevel(lvl) {
+      const game = document.getElementById("game");
+      const message = document.getElementById("message");
+      game.innerHTML = "";
+      message.textContent = `Nivel ${lvl}`;
 
-      startScreen.style.display = "none";
-      gameArea.style.display = "block";
+      const size = lvl + 1; 
+      game.style.gridTemplateColumns = `repeat(${size}, 60px)`;
 
-      // Iniciar música alegre
-      celebrationMusic.play().catch(err => {
-        console.log("El navegador bloqueó la reproducción automática:", err);
-      });
+      const totalCells = size * size;
+      let flowerIndex = Math.floor(Math.random() * totalCells);
 
-      loadLevel();
-    });
+      function renderGrid() {
+        game.innerHTML = "";
+        flowerIndex = Math.floor(Math.random() * totalCells);
 
-    function loadLevel() {
-      const level = levels[currentLevel - 1];
-      levelTitle.textContent = `Nivel ${currentLevel}`;
-      grid.innerHTML = "";
-      grid.style.gridTemplateColumns = `repeat(${level.size}, 80px)`;
+        for (let i = 0; i < totalCells; i++) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
 
-      const totalCells = level.size * level.size;
-      let sunflowerIndex = Math.floor(Math.random() * totalCells);
-
-      for (let i = 0; i < totalCells; i++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.textContent = i === sunflowerIndex ? "🌻" : "🌸";
-
-        cell.addEventListener("click", () => {
-          if (i === sunflowerIndex) {
-            if (currentLevel < levels.length) {
-              currentLevel++;
-              loadLevel();
-            } else {
-              endGame();
-            }
+          if (i === flowerIndex) {
+            cell.textContent = "🌻";
+            cell.onclick = () => nextLevel();
           } else {
-            alert("¡Esa no es la flor correcta! Intenta de nuevo 🌸");
+            cell.textContent = distractors[Math.floor(Math.random() * distractors.length)];
+            cell.onclick = () => cell.style.opacity = "0.3";
           }
-        });
 
-        grid.appendChild(cell);
+          game.appendChild(cell);
+        }
       }
 
-      // Si el nivel requiere movimiento de flor
-      if (level.moveInterval) {
-        setInterval(() => {
-          sunflowerIndex = Math.floor(Math.random() * totalCells);
-          [...grid.children].forEach((cell, idx) => {
-            cell.textContent = idx === sunflowerIndex ? "🌻" : "🌸";
-          });
-        }, level.moveInterval);
+      renderGrid();
+
+      if (lvl >= 5) {
+        let speed = 1000; // 1 segundo
+        if (lvl === 6) speed = 750; 
+        if (lvl === 7) speed = 800; 
+        interval = setInterval(renderGrid, speed);
       }
     }
 
-    function endGame() {
-      gameArea.style.display = "none";
-      finalMessage.style.display = "block";
-      celebrationMusic.pause();
+    function nextLevel() {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+      if (level < maxLevel) {
+        level++;
+        startLevel(level);
+      } else {
+        finishGame();
+      }
+    }
+
+    function finishGame() {
+      const game = document.getElementById("game");
+      const message = document.getElementById("message");
+      const bouquet = document.getElementById("bouquet");
+
+      game.innerHTML = "";
+      bouquet.style.display = "block";
+
+      // Detener música alegre de fondo
+      const music = document.getElementById("celebrationMusic");
+      music.pause();
+      music.currentTime = 0;
+
+      // Reproducir fanfarria/aplausos
+      const finalSound = document.getElementById("finalSound");
       finalSound.play();
 
-      finalMessage.innerHTML = `
-        🎉🌻 ¡Felicidades ${playerName}! 🌻🎉 <br><br>
-        Superaste todos los niveles y este ramo de girasoles es para ti 💛💐
-      `;
+      // Cuando termine la fanfarria, reactivar la música alegre
+      finalSound.onended = () => {
+        music.play();
+      };
 
       // Confeti
-      const duration = 5 * 1000;
+      launchConfetti();
+
+      // Texto con efecto máquina de escribir
+      const fullMessage = `¡Felicidades ${player}! Encontraste todos los girasoles 🌻💛 
+      
+💌 Cada girasol que encontraste representa un pensamiento bonito que tengo hacia ti. 
+Este ramo es para recordarte que, aunque no pueda verte, siempre serás mi luz y mi alegría.
+                                    💌Te Quiero Mucho ${player}💌`;
+
+      let i = 0;
+      message.innerHTML = "";
+      function typeWriter() {
+        if (i < fullMessage.length) {
+          message.innerHTML += fullMessage.charAt(i);
+          i++;
+          setTimeout(typeWriter, 60); // velocidad (ms por letra)
+        }
+      }
+      typeWriter();
+    }
+
+    // Confeti
+    function launchConfetti() {
+      const duration = 3 * 1000;
       const end = Date.now() + duration;
 
       (function frame() {
@@ -183,6 +231,7 @@
           spread: 55,
           origin: { x: 1 }
         });
+
         if (Date.now() < end) {
           requestAnimationFrame(frame);
         }
@@ -191,6 +240,7 @@
   </script>
 
   <!-- Librería de confeti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </body>
 </html>
+
