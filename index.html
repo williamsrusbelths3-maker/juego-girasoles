@@ -19,11 +19,14 @@
       display: grid;
       gap: 10px;
       justify-content: center;
+      max-width: 95vw; /* 🔹 nuevo: limita el ancho al 95% de la pantalla */
+      margin: 0 auto;  /* 🔹 nuevo: centra el tablero */
     }
+
     .cell {
-      width: 18vw;       /* relativo al ancho de la pantalla */
-      height: 18vw;      /* cuadradas */
-      font-size: 8vw;    /* el emoji escala proporcional */
+      width: 100%;                /* 🔹 ahora se ajusta a la columna */
+      aspect-ratio: 1 / 1;        /* 🔹 siempre cuadrado */
+      font-size: calc(2vw + 10px);/* 🔹 texto (emoji) escala pero controlado */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -32,6 +35,7 @@
       border-radius: 10px;
       box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
     }
+
     .cell:hover {
       background: #ffe082;
     }
@@ -123,7 +127,7 @@
       message.textContent = `Nivel ${lvl}`;
 
       const size = lvl + 1; 
-      game.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+      game.style.gridTemplateColumns = `repeat(${size}, minmax(40px, 1fr))`;
 
       const totalCells = size * size;
       let flowerIndex = Math.floor(Math.random() * totalCells);
@@ -245,5 +249,6 @@ Este ramo es para recordarte que, aunque no pueda verte seguido, siempre serás 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </body>
 </html>
+
 
 
